@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PEAC Asztalitenisz Foglalás</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    .header { background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%); }
+    .table-btn { 
+      padding: 12px; 
+      border: 2px solid #d1d5db; 
+      border-radius: 8px; 
+      font-weight: 600; 
+      cursor: pointer; 
+      transition: all 0.3s;
+    }
+    .table-btn:hover { background: #f3f4f6; }
+    .table-btn.selected { 
+      background: #22c55e; 
+      color: white; 
+      border-color: #22c55e;
+    }
+  </style>
+</head>
+<body class="bg-gray-100">
+  <!-- HEADER -->
+  <header class="header text-white p-8 shadow-lg">
+    <div class="max-w-6xl mx-auto">
+      <h1 class="text-4xl font-bold">🏓 PEAC Asztalitenisz</h1>
+      <p class="text-blue-100 mt-1">Pécsi Egyetemi Atlétikai Club - Foglalási Rendszer</p>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="max-w-6xl mx-auto p-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- ASZTALOK -->
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-bold mb-4">📍 Asztalok Kiválasztása</h2>
+        <div class="grid grid-cols-2 gap-3" id="tables-grid">
+          <!-- Asztalok itt lesznek -->
+        </div>
+      </div>
+
+      <!-- FOGLALÁSI FORMA -->
+      <div class="lg:col-span-2 bg-white p-8 rounded-lg shadow-md">
+        <h2 class="text-2xl font-bold mb-6">📅 Foglalás Kitöltése</h2>
+        
+        <form id="booking-form" class="space-y-5">
+          
+          <!-- NÉV -->
+          <div>
+            <label class="block font-semibold text-gray-700 mb-2">Teljes Név *</label>
+            <input 
+              type="text" 
+              id="name" 
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+              placeholder="pl. Kiss János"
+              required
+            >
+          </div>
+
+          <!-- EMAIL -->
+          <div>
+            <label class="block font-semibold text-gray-700 mb-2">E-mail Cím *</label>
+            <input 
+              type="email" 
+              id="email" 
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+              placeholder="pl. kiss.janos@example.com"
+              required
+            >
+          </div>
+
+          <!-- DÁTUM ÉS IDŐ -->
+          <div>
+            <label class="block font-semibold text-gray-700 mb-2">Dátum és Kezdési Idő *</label>
+            <input 
+              type="datetime-local" 
+              id="start-time" 
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              required
+            >
+          </div>
+
+          <!-- ÓRA SZÁM -->
+          <div>
+            <label class="block font-semibold text-gray-700 mb-2">Foglalás Hossza: <span class="text-blue-600" id="hours-display">1</span> óra</label>
+            <input 
+              type="range" 
+              id="hours" 
+              min="1" 
+              max="4" 
+              value="1" 
+              class="w-full cursor-pointer"
+            >
+            <div class="flex justify-between text-xs text-gray-500 mt-1">
+              <span>1 óra</span>
+              <span>4 óra</span>
+            </div>
+          </div>
+
+          <!-- EDZŐ -->
+          <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" id="with-coach" class="w-5 h-5 text-blue-600 cursor-pointer">
+              <div>
+                <span class="font-semibold text-gray-900">🏅 Edzővel játszom</span>
+                <p class="text-sm text-gray-600">+3000 Ft/óra</p>
+              </div>
+            </label>
+          </div>
+
+          <!-- ÜTŐK -->
+          <div>
+            <label class="block font-semibold text-gray-700 mb-2">🎾 Ütő Bérlés</label>
+            <select 
+              id="rackets" 
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="0">Nincs ütő (0 Ft)</option>
+              <option value="1">1 ütő (+500 Ft)</option>
+              <option value="2">2 ütő (+1000 Ft)</option>
+              <option value="3">3 ütő (+1500 Ft)</option>
+              <option value="4">4 ütő (+2000 Ft)</option>
+            </select>
+          </div>
+
+          <!-- MEGJEGYZÉS -->
+          <div>
+            <label class="block font-semibold text-gray-700 mb-2">Megjegyzés (opcionális)</label>
+            <textarea 
+              id="notes" 
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+              placeholder="pl. Csoportos foglalás, speciális igények, stb."
+              rows="3"
+            ></textarea>
+          </div>
+
+          <!-- ÁR ÖSSZESEN -->
+          <div class="bg-gradient-to-r from-blue-100 to-blue-50 p-6 rounded-lg border-2 border-blue-300">
+            <p class="text-sm text-gray-700 mb-1">Végösszesen Fizetendő:</p>
+            <p class="text-4xl font-bold text-blue-900" id="total-price">2000 Ft</p>
+            <p class="text-xs text-gray-600 mt-2">* Alap ár: 2000 Ft/óra</p>
+          </div>
+
+          <!-- FOGLALÁS GOMB -->
+          <button 
+            type="submit" 
+            id="submit-btn"
+            class="w-full bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold py-4 rounded-lg transition shadow-md hover:shadow-lg text-lg"
+          >
+            ✅ FOGLALÁS MEGERŐSÍTÉSE
+          </button>
+
+          <!-- ÜZENET -->
+          <div id="message" class="hidden p-4 rounded-lg text-center font-semibold"></div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-gray-800 text-white p-6 mt-12 text-center">
+    <p>&copy; 2026 PEAC PTE Asztalitenisz Szakcsoport</p>
+    <p class="text-gray-400 mt-2">Pécs, Baranya, Hungary | teremfoglalo.pte.hu</p>
+  </footer>
+
+  <script>
+    // ADATOK
+    const PRICES = {
+      BASE: 2000,      // Ft/óra
+      COACH: 3000,     // Ft/óra extra
+      RACKET: 500      // Ft per ütő
+    };
+
+    let selectedTable = null;
+
+    // ASZTALOK INICIALIZÁLÁSA
+    function initTables() {
+      const grid = document.getElementById('tables-grid');
+      for (let i = 1; i <= 8; i++) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'table-btn';
+        btn.textContent = `Asztal ${i}`;
+        btn.dataset.tableId = i;
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          selectTable(i, btn);
+        });
+        grid.appendChild(btn);
+      }
+    }
+
+    // ASZTAL KIVÁLASZTÁS
+    function selectTable(id, btn) {
+      // Előző kijelölés eltávolítása
+      document.querySelectorAll('.table-btn').forEach(b => {
+        b.classList.remove('selected');
+      });
+      
+      // Új kijelölés
+      selectedTable = id;
+      btn.classList.add('selected');
+      console.log(`Asztal ${id} kiválasztva`);
+    }
+
+    // ÁR SZÁMÍTÁS
+    function calculatePrice() {
+      const hours = parseInt(document.getElementById('hours').value) || 1;
+      const withCoach = document.getElementById('with-coach').checked;
+      const rackets = parseInt(document.getElementById('rackets').value) || 0;
+
+      let total = PRICES.BASE * hours;
+      if (withCoach) total += PRICES.COACH * hours;
+      total += PRICES.RACKET * rackets;
+
+      return total;
+    }
+
+    // ÁR FRISSÍTÉS
+    function updatePrice() {
+      const price = calculatePrice();
+      document.getElementById('total-price').textContent = `${price.toLocaleString('hu-HU')} Ft`;
+    }
+
+    // ESEMÉNYLEFIGYELŐK
+    document.getElementById('hours').addEventListener('input', (e) => {
+      document.getElementById('hours-display').textContent = e.target.value;
+      updatePrice();
+    });
+
+    document.getElementById('with-coach').addEventListener('change', updatePrice);
+    document.getElementById('rackets').addEventListener('change', updatePrice);
+
+    // FOGLALÁS KÜLDÉSE
+    document.getElementById('booking-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const startTime = document.getElementById('start-time').value;
+      const hours = parseInt(document.getElementById('hours').value);
+      const withCoach = document.getElementById('with-coach').checked;
+      const rackets = parseInt(document.getElementById('rackets').value);
+      const notes = document.getElementById('notes').value;
+      const totalPrice = calculatePrice();
+
+      // VALIDÁCIÓ
+      if (!selectedTable) {
+        showMessage('❌ Kérlek válassz egy asztalt!', 'error');
+        return;
+      }
+
+      if (!startTime) {
+        showMessage('❌ Kérlek válassz dátumot és időt!', 'error');
+        return;
+      }
+
+      // ADATOK NAPLÓZÁSA (MAJD SUPABASE-BE MEGY)
+      const bookingData = {
+        table_id: selectedTable,
+        name,
+        email,
+        start_time: startTime,
+        duration_hours: hours,
+        with_coach: withCoach,
+        racket_count: rackets,
+        notes,
+        total_price: totalPrice,
+        created_at: new Date().toISOString()
+      };
+
+      console.log('📝 FOGLALÁS ADATOK:', bookingData);
+
+      // SIKER ÜZENET
+      showMessage(`✅ Foglalás sikeres!\n\nÖsszeg: ${totalPrice.toLocaleString('hu-HU')} Ft\nVisszaigazolás érkezik az e-mailre: ${email}`, 'success');
+
+      // FORM RESETELÉS
+      setTimeout(() => {
+        document.getElementById('booking-form').reset();
+        selectedTable = null;
+        document.querySelectorAll('.table-btn').forEach(b => {
+          b.classList.remove('selected');
+        });
+        updatePrice();
+      }, 2000);
+    });
+
+    // ÜZENET MEGJELENÍTÉS
+    function showMessage(text, type) {
+      const msg = document.getElementById('message');
+      msg.textContent = text;
+      msg.className = type === 'success' 
+        ? 'bg-green-100 text-green-900 border border-green-300' 
+        : 'bg-red-100 text-red-900 border border-red-300';
+      msg.classList.remove('hidden');
+      
+      if (type === 'success') {
+        setTimeout(() => msg.classList.add('hidden'), 5000);
+      }
+    }
+
+    // INIT
+    initTables();
+    updatePrice();
+
+    console.log('🎉 PEAC Asztalitenisz Foglalási Rendszer - Betöltve!');
+  </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PEAC Asztalitenisz Foglalás</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    .header { background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%); }
+    .table-btn { 
+      padding: 12px; 
+      border: 2px solid #d1d5db; 
+      border-radius: 8px; 
+      font-weight: 600; 
+      cursor: pointer; 
+      transition: all 0.3s;
+    }
+    .table-btn:hover { background: #f3f4f6; }
+    .table-btn.selected { 
+      background: #22c55e; 
+      color: white; 
+      border-color: #22c55e;
+    }
+  </style>
+</head>
+<body class="bg-gray-100">
+  <!-- HEADER -->
+  <header class="header text-white p-8 shadow-lg">
+    <div class="max-w-6xl mx-auto">
+      <h1 class="text-4xl font-bold">🏓 PEAC Asztalitenisz</h1>
+      <p class="text-blue-100 mt-1">Pécsi Egyetemi Atlétikai Club - Foglalási Rendszer</p>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="max-w-6xl mx-auto p-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- ASZTALOK -->
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-bold mb-4">📍 Asztalok Kiválasztása</h2>
+        <div class="grid grid-cols-2 gap-3" id="tables-grid">
+          <!-- Asztalok itt lesznek -->
+        </div>
+      </div>
+
+      <!-- FOGLALÁSI FORMA -->
+      <div class="lg:col-span-2 bg-white p-8 rounded-lg shadow-md">
+        <h2 class="text-2xl font-bold mb-6">📅 Foglalás Kitöltése</h2>
+        
+        <form id="booking-form" class="space-y-5">
+          
+          <!-- NÉV -->
+          <div>
+            <label class="block font-semibold text-gray-700 mb-2">Teljes Név *</label>
+            <input 
+              type="text" 
+              id="name" 
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+              placeholder="pl. Kiss János"
+              required
+            >
+          </div>
+
+          <!-- EMAIL -->
+          <div>
+            <label class="block font-semibold text-gray-700 mb-2">E-mail Cím *</label>
+            <input 
+              type="email" 
+              id="email" 
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+              placeholder="pl. kiss.janos@example.com"
+              required
+            >
+          </div>
+
+          <!-- DÁTUM ÉS IDŐ -->
+          <div>
+            <label class="block font-semibold text-gray-700 mb-2">Dátum és Kezdési Idő *</label>
+            <input 
+              type="datetime-local" 
+              id="start-time" 
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              required
+            >
+          </div>
+
+          <!-- ÓRA SZÁM -->
+          <div>
+            <label class="block font-semibold text-gray-700 mb-2">Foglalás Hossza: <span class="text-blue-600" id="hours-display">1</span> óra</label>
+            <input 
+              type="range" 
+              id="hours" 
+              min="1" 
+              max="4" 
+              value="1" 
+              class="w-full cursor-pointer"
+            >
+            <div class="flex justify-between text-xs text-gray-500 mt-1">
+              <span>1 óra</span>
+              <span>4 óra</span>
+            </div>
+          </div>
+
+          <!-- EDZŐ -->
+          <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" id="with-coach" class="w-5 h-5 text-blue-600 cursor-pointer">
+              <div>
+                <span class="font-semibold text-gray-900">🏅 Edzővel játszom</span>
+                <p class="text-sm text-gray-600">+3000 Ft/óra</p>
+              </div>
+            </label>
+          </div>
+
+          <!-- ÜTŐK -->
+          <div>
+            <label class="block font-semibold text-gray-700 mb-2">🎾 Ütő Bérlés</label>
+            <select 
+              id="rackets" 
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="0">Nincs ütő (0 Ft)</option>
+              <option value="1">1 ütő (+500 Ft)</option>
+              <option value="2">2 ütő (+1000 Ft)</option>
+              <option value="3">3 ütő (+1500 Ft)</option>
+              <option value="4">4 ütő (+2000 Ft)</option>
+            </select>
+          </div>
+
+          <!-- MEGJEGYZÉS -->
+          <div>
+            <label class="block font-semibold text-gray-700 mb-2">Megjegyzés (opcionális)</label>
+            <textarea 
+              id="notes" 
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+              placeholder="pl. Csoportos foglalás, speciális igények, stb."
+              rows="3"
+            ></textarea>
+          </div>
+
+          <!-- ÁR ÖSSZESEN -->
+          <div class="bg-gradient-to-r from-blue-100 to-blue-50 p-6 rounded-lg border-2 border-blue-300">
+            <p class="text-sm text-gray-700 mb-1">Végösszesen Fizetendő:</p>
+            <p class="text-4xl font-bold text-blue-900" id="total-price">2000 Ft</p>
+            <p class="text-xs text-gray-600 mt-2">* Alap ár: 2000 Ft/óra</p>
+          </div>
+
+          <!-- FOGLALÁS GOMB -->
+          <button 
+            type="submit" 
+            id="submit-btn"
+            class="w-full bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold py-4 rounded-lg transition shadow-md hover:shadow-lg text-lg"
+          >
+            ✅ FOGLALÁS MEGERŐSÍTÉSE
+          </button>
+
+          <!-- ÜZENET -->
+          <div id="message" class="hidden p-4 rounded-lg text-center font-semibold"></div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-gray-800 text-white p-6 mt-12 text-center">
+    <p>&copy; 2026 PEAC PTE Asztalitenisz Szakcsoport</p>
+    <p class="text-gray-400 mt-2">Pécs, Baranya, Hungary | teremfoglalo.pte.hu</p>
+  </footer>
+
+  <script>
+    // ADATOK
+    const PRICES = {
+      BASE: 2000,      // Ft/óra
+      COACH: 3000,     // Ft/óra extra
+      RACKET: 500      // Ft per ütő
+    };
+
+    let selectedTable = null;
+
+    // ASZTALOK INICIALIZÁLÁSA
+    function initTables() {
+      const grid = document.getElementById('tables-grid');
+      for (let i = 1; i <= 8; i++) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'table-btn';
+        btn.textContent = `Asztal ${i}`;
+        btn.dataset.tableId = i;
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          selectTable(i, btn);
+        });
+        grid.appendChild(btn);
+      }
+    }
+
+    // ASZTAL KIVÁLASZTÁS
+    function selectTable(id, btn) {
+      // Előző kijelölés eltávolítása
+      document.querySelectorAll('.table-btn').forEach(b => {
+        b.classList.remove('selected');
+      });
+      
+      // Új kijelölés
+      selectedTable = id;
+      btn.classList.add('selected');
+      console.log(`Asztal ${id} kiválasztva`);
+    }
+
+    // ÁR SZÁMÍTÁS
+    function calculatePrice() {
+      const hours = parseInt(document.getElementById('hours').value) || 1;
+      const withCoach = document.getElementById('with-coach').checked;
+      const rackets = parseInt(document.getElementById('rackets').value) || 0;
+
+      let total = PRICES.BASE * hours;
+      if (withCoach) total += PRICES.COACH * hours;
+      total += PRICES.RACKET * rackets;
+
+      return total;
+    }
+
+    // ÁR FRISSÍTÉS
+    function updatePrice() {
+      const price = calculatePrice();
+      document.getElementById('total-price').textContent = `${price.toLocaleString('hu-HU')} Ft`;
+    }
+
+    // ESEMÉNYLEFIGYELŐK
+    document.getElementById('hours').addEventListener('input', (e) => {
+      document.getElementById('hours-display').textContent = e.target.value;
+      updatePrice();
+    });
+
+    document.getElementById('with-coach').addEventListener('change', updatePrice);
+    document.getElementById('rackets').addEventListener('change', updatePrice);
+
+    // FOGLALÁS KÜLDÉSE
+    document.getElementById('booking-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const startTime = document.getElementById('start-time').value;
+      const hours = parseInt(document.getElementById('hours').value);
+      const withCoach = document.getElementById('with-coach').checked;
+      const rackets = parseInt(document.getElementById('rackets').value);
+      const notes = document.getElementById('notes').value;
+      const totalPrice = calculatePrice();
+
+      // VALIDÁCIÓ
+      if (!selectedTable) {
+        showMessage('❌ Kérlek válassz egy asztalt!', 'error');
+        return;
+      }
+
+      if (!startTime) {
+        showMessage('❌ Kérlek válassz dátumot és időt!', 'error');
+        return;
+      }
+
+      // ADATOK NAPLÓZÁSA (MAJD SUPABASE-BE MEGY)
+      const bookingData = {
+        table_id: selectedTable,
+        name,
+        email,
+        start_time: startTime,
+        duration_hours: hours,
+        with_coach: withCoach,
+        racket_count: rackets,
+        notes,
+        total_price: totalPrice,
+        created_at: new Date().toISOString()
+      };
+
+      console.log('📝 FOGLALÁS ADATOK:', bookingData);
+
+      // SIKER ÜZENET
+      showMessage(`✅ Foglalás sikeres!\n\nÖsszeg: ${totalPrice.toLocaleString('hu-HU')} Ft\nVisszaigazolás érkezik az e-mailre: ${email}`, 'success');
+
+      // FORM RESETELÉS
+      setTimeout(() => {
+        document.getElementById('booking-form').reset();
+        selectedTable = null;
+        document.querySelectorAll('.table-btn').forEach(b => {
+          b.classList.remove('selected');
+        });
+        updatePrice();
+      }, 2000);
+    });
+
+    // ÜZENET MEGJELENÍTÉS
+    function showMessage(text, type) {
+      const msg = document.getElementById('message');
+      msg.textContent = text;
+      msg.className = type === 'success' 
+        ? 'bg-green-100 text-green-900 border border-green-300' 
+        : 'bg-red-100 text-red-900 border border-red-300';
+      msg.classList.remove('hidden');
+      
+      if (type === 'success') {
+        setTimeout(() => msg.classList.add('hidden'), 5000);
+      }
+    }
+
+    // INIT
+    initTables();
+    updatePrice();
+
+    console.log('🎉 PEAC Asztalitenisz Foglalási Rendszer - Betöltve!');
+  </script>
+</body>
+</html>
